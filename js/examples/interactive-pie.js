@@ -1,5 +1,27 @@
 var dataset = [
     {
+        name: 2014,
+        data: [
+            { name: "Chrome", value: 10 },
+            { name: "Firefox", value: 20 },
+            { name: "IE / Edge", value: 50 },
+            { name: "Safari", value: 9 },
+            { name: "Opera", value: 2 },
+            { name: "Autre", value: 1 }
+        ]
+    },
+    {
+        name: 2015,
+        data: [
+            { name: "Chrome", value: 40 },
+            { name: "Firefox", value: 13 },
+            { name: "IE / Edge", value: 20 },
+            { name: "Safari", value: 9 },
+            { name: "Opera", value: 2 },
+            { name: "Autre", value: 1 }
+        ]
+    },
+    {
         name: 2016,
         data: [
             { name: "Chrome", value: 44.87 },
@@ -46,6 +68,10 @@ var container = svg.append('g')
     .attr('transform', 'translate('+ width / 2 + ',' + height / 2 +')')
 ;
 
+var arc = d3.arc()
+    .innerRadius(radius * 0.7)
+    .outerRadius(radius)
+;
 
 function reloadDonut(data) {
     var pie = d3.pie()
@@ -53,11 +79,6 @@ function reloadDonut(data) {
         .value(function(d) {
             return d.value;
         })
-    ;
-
-    var arc = d3.arc()
-        .innerRadius(radius * 0.7)
-        .outerRadius(radius)
     ;
 
     var paths = container.selectAll('path')
@@ -68,7 +89,6 @@ function reloadDonut(data) {
     paths
         .enter()
         .append("path")
-        .attr('d', arc)
         .attr('class', 'arc')
         .style('fill', function(d) {
             return colors[d.index % colors.length];
@@ -77,6 +97,9 @@ function reloadDonut(data) {
         // Interaction
         .on('mouseover', onPathOver)
         .on('mouseout', onPathOut)
+        .transition()
+        .duration(500)
+        .attrTween("d", arcTween)
     ;
 
     // Animation
@@ -84,10 +107,18 @@ function reloadDonut(data) {
     paths
         .transition()
         .duration(500)
-        .attr('d', arc)
+        .attrTween("d", arcTween)
     ;
 
     paths.exit().remove();
+}
+
+function arcTween(a) {
+    var i = d3.interpolate(this._current, a);
+    this._current = i(0);
+    return function(t) {
+        return arc(i(t));
+    };
 }
 
 function onPathOver (d) {
@@ -115,12 +146,42 @@ function onPathOut(d) {
     }, 1000);
 }
 
-reloadDonut(dataset[1]);
-
-var radios = document.querySelectorAll('#selector input');
-for(var j=0, radio; radio = radios[j]; j++) {
-    radio.addEventListener('change', function() {
-        reloadDonut(dataset[this.value]);
-    })
+function onSelectYear(d) {
+    reloadDonut(d);
 }
+
+function initSelector(data) {
+    d3.select('#selector')
+        .selectAll('div')
+        .data(data)
+        .enter()
+        .append('div')
+            .attr('class', 'form-check form-check-inline')
+            .append('label')
+                .attr('class', 'form-check-label')
+                .attr('for', function(d, i) {
+                    return 'year-' + i;
+                })
+                .text(function(d) {
+                    return d.name;
+                })
+                .append('input')
+                    .attr('type', 'radio')
+                    .attr('class', 'form-check-input')
+                    .attr('name', 'year')
+                    .attr('id', function(d, i) {
+                        return 'year-' + i;
+                    })
+                    .attr('value', function(d, i) {
+                        return i;
+                    })
+                    .attr('checked', function(d, i) {
+                        return (i == data.length - 1) ? 'checked' : null;
+                    })
+                    .on('change', onSelectYear)
+    ;
+}
+
+initSelector(dataset);
+reloadDonut(dataset[dataset.length - 1]);
 
