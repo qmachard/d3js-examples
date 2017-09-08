@@ -1,51 +1,3 @@
-var dataset = [
-    {
-        name: 2014,
-        data: [
-            { name: "Chrome", value: 10 },
-            { name: "Firefox", value: 20 },
-            { name: "IE / Edge", value: 50 },
-            { name: "Safari", value: 9 },
-            { name: "Opera", value: 2 },
-            { name: "Autre", value: 1 }
-        ]
-    },
-    {
-        name: 2015,
-        data: [
-            { name: "Chrome", value: 40 },
-            { name: "Firefox", value: 13 },
-            { name: "IE / Edge", value: 20 },
-            { name: "Safari", value: 9 },
-            { name: "Opera", value: 2 },
-            { name: "Autre", value: 1 }
-        ]
-    },
-    {
-        name: 2016,
-        data: [
-            { name: "Chrome", value: 44.87 },
-            { name: "Firefox", value: 10.51 },
-            { name: "IE / Edge", value: 11.24 },
-            { name: "Safari", value: 13.06 },
-            { name: "Opera", value: 5 },
-            { name: "Autre", value: 2.43 }
-        ]
-    },
-    {
-        name: 2017,
-        data: [
-            { name: "Chrome", value: 50 },
-            { name: "Firefox", value: 13.96 },
-            { name: "IE / Edge", value: 12.70 },
-            { name: "Safari", value: 9.60 },
-            { name: "Opera", value: 4 },
-            { name: "Autre", value: 3.53 }
-        ]
-    }
-
-];
-
 var width = 600,
     height = 400,
     radius = height / 2,
@@ -55,6 +7,7 @@ var width = 600,
 
 var timeout;
 
+// Create SVG
 var svg = d3
     .select('#chart')
     .append('svg')
@@ -64,15 +17,25 @@ var svg = d3
     .attr('preserveAspectRatio', 'xMinYMin')
 ;
 
+// Create Container to chart
 var container = svg.append('g')
     .attr('transform', 'translate('+ width / 2 + ',' + height / 2 +')')
 ;
 
+// Setup simple arc function
 var arc = d3.arc()
     .innerRadius(radius * 0.7)
     .outerRadius(radius)
 ;
 
+// Setup a DateTime parser
+var parseTime = d3.timeParse("%Y-%m");
+
+/**
+ * Method to (re)load donut with data
+ *
+ * @param data
+ */
 function reloadDonut(data) {
     var pie = d3.pie()
         .sort(null)
@@ -113,6 +76,12 @@ function reloadDonut(data) {
     paths.exit().remove();
 }
 
+/**
+ * Method to animate arc
+ *
+ * @param a
+ * @returns {Function}
+ */
 function arcTween(a) {
     var i = d3.interpolate(this._current, a);
     this._current = i(0);
@@ -121,6 +90,10 @@ function arcTween(a) {
     };
 }
 
+/**
+ * Method call when a path is mouseover
+ * @param d // data
+ */
 function onPathOver (d) {
     if(timeout) clearTimeout(timeout);
 
@@ -134,7 +107,10 @@ function onPathOver (d) {
     ;
 }
 
-function onPathOut(d) {
+/**
+ * Method call when a path is mouse out
+ */
+function onPathOut() {
     timeout = setTimeout(function() {
         d3
             .select('#chart')
@@ -146,42 +122,105 @@ function onPathOut(d) {
     }, 1000);
 }
 
+/**
+ * Method call when year is selected
+ *
+ * @param d
+ */
 function onSelectYear(d) {
     reloadDonut(d);
 }
 
+/**
+ * Method to init year selector from data
+ * @param data
+ */
 function initSelector(data) {
-    d3.select('#selector')
+    var pageItem = d3.select('#selector')
         .selectAll('div')
         .data(data)
         .enter()
         .append('div')
-            .attr('class', 'form-check form-check-inline')
-            .append('label')
-                .attr('class', 'form-check-label')
-                .attr('for', function(d, i) {
-                    return 'year-' + i;
-                })
-                .text(function(d) {
-                    return d.name;
-                })
-                .append('input')
-                    .attr('type', 'radio')
-                    .attr('class', 'form-check-input')
-                    .attr('name', 'year')
-                    .attr('id', function(d, i) {
-                        return 'year-' + i;
-                    })
-                    .attr('value', function(d, i) {
-                        return i;
-                    })
-                    .attr('checked', function(d, i) {
-                        return (i == data.length - 1) ? 'checked' : null;
-                    })
-                    .on('change', onSelectYear)
+            .attr('class', 'nav-item nav-link')
     ;
+
+    var input = pageItem.append('input')
+        .attr('type', 'radio')
+        .attr('name', 'year')
+        .attr('id', function(d, i) {
+            return 'year-' + i;
+        })
+        .attr('value', function(d, i) {
+            return i;
+        })
+        .attr('checked', function(d, i) {
+            return i === data.length - 1 ? 'checked' : null;
+        })
+        .on('change', onSelectYear)
+    ;
+
+    var pageLink = pageItem.append('label')
+        .attr('class', 'btn btn-default btn-sm')
+        .attr('for', function(d, i) {
+            return 'year-' + i;
+        })
+        .text(function(d) {
+            return d.name;
+        })
+    ;
+
 }
 
-initSelector(dataset);
-reloadDonut(dataset[dataset.length - 1]);
+/**
+ * Method to parse elements
+ *
+ * @param d
+ * @param _
+ * @param columns
+ * @returns {*}
+ */
+function type(d, _, columns) {
+    d['Date'] = parseTime(d['Date']);
+    for (var i = 1, n = columns.length, c; i < n; ++i) {
+        d[c = columns[i]] = +d[c];
+    }
+    return d;
+}
+
+// Load data from CSV
+d3.csv("../data/browser.txt", type, function(error, data) {
+    if (error) throw error;
+
+    // Rearrange data from csv
+    var browsers = data.map(function(d) {
+        var data = [];
+
+        for(var i in d) {
+            if (d.hasOwnProperty(i) && i !== "Date") {
+                data.push({
+                    name: i,
+                    value: d[i]
+                })
+            }
+        }
+
+        return {
+            name: d['Date'].getFullYear(),
+            data: data
+        }
+    });
+
+    // Limit data to 1 per year
+    var currentYear;
+    browsers = browsers.filter(function(d) {
+        if(d.name !== currentYear) {
+            currentYear = d.name;
+
+            return d;
+        }
+    });
+
+    initSelector(browsers);
+    reloadDonut(browsers[browsers.length - 1]);
+});
 

@@ -47,8 +47,25 @@
             opacity: 0.8;
         }
 
-        .form-check-input {
-            float:left;
+        .selector {
+            margin: 30px auto 0;
+        }
+
+        .nav-item input {
+            display: none;
+        }
+
+        .nav-item label,
+        .nav-itemv label:hover {
+            color: teal;
+            cursor: pointer;
+
+            transition: all .2s;
+        }
+
+        .nav-item input:checked + label {
+            background: teal;
+            color: white;
         }
     </style>
 </head>
@@ -58,24 +75,15 @@
     <h1>Interactive Pie</h1>
 
     <div class="chart">
-        <form action="#" id="selector">
-
-            <!--<div class="form-check form-check-inline">-->
-                <!--<label class="form-check-label" for="year-2016">-->
-                    <!--<input class="form-check-input" type="radio" name="year" id="year-2016" value="0"> 2016-->
-                <!--</label>-->
-            <!--</div>-->
-            <!--<div class="form-check form-check-inline">-->
-                <!--<label class="form-check-label" for="year-2017">-->
-                    <!--<input class="form-check-input" type="radio" name="year" id="year-2017" value="1" checked> 2017-->
-                <!--</label>-->
-            <!--</div>-->
-        </form>
         <div id="chart" class="inner">
             <div class="infos" style="opacity: 0;"></div>
         </div>
+        <form action="#" id="selector" class="selector nav nav-pills nav-fil"></form>
     </div>
     <iframe src="../js/examples/interactive-pie.js" frameborder="0" class="code"></iframe>
+
+    <h4>Data <small>(from <a href="https://github.com/datasets/browser-stats">Browser Stats</a>)</small></h4>
+    <iframe src="../data/browser.txt" frameborder="0" class="code"></iframe>
 
     <script src="../js/examples/interactive-pie.js"></script>
 </div>
