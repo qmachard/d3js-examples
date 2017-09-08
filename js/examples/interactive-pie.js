@@ -1,6 +1,6 @@
 var dataset = [
     {
-        year: 2016,
+        name: 2016,
         data: [
             { name: "Chrome", value: 44.87 },
             { name: "Firefox", value: 10.51 },
@@ -11,7 +11,7 @@ var dataset = [
         ]
     },
     {
-        year: 2017,
+        name: 2017,
         data: [
             { name: "Chrome", value: 50 },
             { name: "Firefox", value: 13.96 },
@@ -30,6 +30,8 @@ var width = 600,
     colors = ['#009999', '#008888', '#007777', '#006666', '#005555', '#004444', '#003333', '#002222'],
     i = 0
 ;
+
+var timeout;
 
 var svg = d3
     .select('#chart')
@@ -62,8 +64,6 @@ function reloadDonut(data) {
         .data(pie(data.data))
     ;
 
-    var timeout;
-
     // Add more paths if values are not the same
     paths
         .enter()
@@ -74,6 +74,9 @@ function reloadDonut(data) {
             return colors[d.index % colors.length];
         })
         .style('stroke', '#FFFFFF')
+        // Interaction
+        .on('mouseover', onPathOver)
+        .on('mouseout', onPathOut)
     ;
 
     // Animation
@@ -84,34 +87,32 @@ function reloadDonut(data) {
         .attr('d', arc)
     ;
 
-    // Interactions
-    paths
-        .on('mouseover', function(d) {
-            if(timeout) clearTimeout(timeout);
-
-            d3
-                .select('#chart')
-                .select('.infos')
-                .html('<span class="name">' + d.data.name + '</span><span class="value" style="color: ' + colors[d.index % colors.length] + '">' + d.data.value + ' %</span>')
-                .transition()
-                .duration(300)
-                .style('opacity', 1)
-            ;
-        })
-        .on('mouseout', function(d) {
-            timeout = setTimeout(function() {
-                d3
-                    .select('#chart')
-                    .select('.infos')
-                    .transition()
-                    .duration(300)
-                    .style('opacity', 0)
-                ;
-            }, 1000);
-        })
-    ;
-
     paths.exit().remove();
+}
+
+function onPathOver (d) {
+    if(timeout) clearTimeout(timeout);
+
+    d3
+        .select('#chart')
+        .select('.infos')
+        .html('<span class="name">' + d.data.name + '</span><span class="value" style="color: ' + colors[d.index % colors.length] + '">' + d.data.value + ' %</span>')
+        .transition()
+        .duration(300)
+        .style('opacity', 1)
+    ;
+}
+
+function onPathOut(d) {
+    timeout = setTimeout(function() {
+        d3
+            .select('#chart')
+            .select('.infos')
+            .transition()
+            .duration(300)
+            .style('opacity', 0)
+        ;
+    }, 1000);
 }
 
 reloadDonut(dataset[1]);
