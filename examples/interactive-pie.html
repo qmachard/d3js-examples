@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Interactive Pie | D3.js Examples</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/js/d3.min.js"></script>
+
+    <style>
+        .infos {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            margin-left: -50px;
+            margin-top: -25px;
+            width: 100px;
+            height: 50px;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        .infos .name {
+            display: block;
+            color: #656565;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        .infos .value {
+            display: block;
+            font-size:1.3rem;
+            font-weight:bold;
+        }
+
+        .arc {
+            transition: opacity .2s;
+        }
+
+        .arc:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a href="/">Back</a>
+    <h1>Interactive Pie</h1>
+
+    <div class="chart">
+        <form action="#" id="selector">
+
+            <div class="form-check form-check-inline">
+                <label class="form-check-label" for="year-2016">
+                    <input class="form-check-input" type="radio" name="year" id="year-2016" value="0"> 2016
+                </label>
+            </div>
+            <div class="form-check form-check-inline">
+                <label class="form-check-label" for="year-2017">
+                    <input class="form-check-input" type="radio" name="year" id="year-2017" value="1" checked> 2017
+                </label>
+            </div>
+        </form>
+        <div id="chart" class="inner">
+            <div class="infos" style="opacity: 0;"></div>
+        </div>
+    </div>
+    <iframe src="/js/examples/interactive-pie.js" frameborder="0" class="code"></iframe>
+
+    <script src="/js/examples/interactive-pie.js"></script>
+</div>
+</body>
+</html>
