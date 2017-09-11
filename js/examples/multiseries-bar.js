@@ -8,8 +8,13 @@ var height = 600,
 var page,
     keys,
     browsers,
-    nextButton,
-    prevButton
+    nextButton = d3.select('#pagination-next').on('click', function() {
+        update(++page);
+    }),
+    prevButton = d3.select('#pagination-prev').on('click', function() {
+        update(--page);
+    }),
+    popover = d3.select('#popover')
 ;
 
 // Create SVG
@@ -36,13 +41,7 @@ var z = d3.scaleOrdinal().range(colors);
 var parseTime = d3.timeParse("%Y-%m");
 
 // Setup pagination
-nextButton = d3.select('#pagination-next').on('click', function() {
-    update(++page);
-});
 
-prevButton = d3.select('#pagination-prev').on('click', function() {
-    update(--page);
-});
 
 /**
  * Transform CSV date to Javascript Date
@@ -107,6 +106,8 @@ function updateChart(data, keys) {
         .attr('fill', function(d) {
             return z(d.name);
         })
+        .on('mouseover', onPlotsOver)
+        .on('mouseout', onPlotsOut)
     ;
 
     var i = 0;
@@ -173,6 +174,28 @@ function update(i) {
     }
 
     updateChart(browsers.slice(i, i + 5), keys);
+}
+
+function onPlotsOver(d, i) {
+    var el = this,
+        $el = d3.select(this);
+
+    popover.select('.popover-header').text(d.name);
+    popover.select('.popover-body').text((d.value + ' %').replace('.', ','));
+
+    popover
+        .style('top', function() {
+            return +$el.attr('y');
+        })
+        .style('left', function() {
+            var offsetX = +d3.select(el.parentNode).attr('transform').replace(/translate\(([0-9]+)\)/, '$1');
+            return +$el.attr('x') + offsetX + 14;
+        })
+        .style('opacity', 1);
+}
+
+function onPlotsOut(d) {
+    popover.style('opacity', 0);
 }
 
 // Load data from CSV
