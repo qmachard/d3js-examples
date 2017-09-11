@@ -7,7 +7,6 @@ var height = 600,
 
 // Create SVG
 var svg = d3.select('#chart').append('svg')
-    .attr('height', height)
     .attr('width', '100%')
     .attr('viewBox', '0 0 ' + width + ' ' + height)
     .attr('preserveAspectRatio', 'xMinYMin')
