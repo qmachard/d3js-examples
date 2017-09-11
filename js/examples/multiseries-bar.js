@@ -1,8 +1,20 @@
 var height = 600,
     width = 800,
+    displayYearNumber = 5,
     margin = { top: 20, right: 20, bottom: 20, left: 40 },
     colors = ['#009999', '#008888', '#007777', '#006666', '#005555', '#004444', '#003333', '#002222']
 ;
+
+// Create SVG
+var svg = d3.select('#chart').append('svg')
+    .attr('height', height)
+    .attr('width', '100%')
+    .attr('viewBox', '0 0 ' + width + ' ' + height)
+    .attr('preserveAspectRatio', 'xMinYMin')
+;
+
+width = width - margin.left - margin.right;
+height = height - margin.top - margin.bottom;
 
 // Interface elements
 var page,
@@ -14,17 +26,8 @@ var page,
     prevButton = d3.select('#pagination-prev').on('click', function() {
         update(--page);
     }),
-    popover = d3.select('#popover')
+    popover
 ;
-
-// Create SVG
-var svg = d3.select('#chart').append('svg')
-    .attr('height', height)
-    .attr('width', width)
-;
-
-width = width - margin.left - margin.right;
-height = height - margin.top - margin.bottom;
 
 // Create container
 var container = svg.append("g")
@@ -167,35 +170,93 @@ function update(i) {
         prevButton.node().parentNode.classList.add('disabled');
     }
 
-    if(i < browsers.length - 5) {
+    if(i < browsers.length - displayYearNumber) {
         nextButton.node().parentNode.classList.remove('disabled');
     } else {
         nextButton.node().parentNode.classList.add('disabled');
     }
 
-    updateChart(browsers.slice(i, i + 5), keys);
+    updateChart(browsers.slice(i, i + displayYearNumber), keys);
 }
 
-function onPlotsOver(d, i) {
+function onPlotsOver(d) {
     var el = this,
         $el = d3.select(this);
 
-    popover.select('.popover-header').text(d.name);
-    popover.select('.popover-body').text((d.value + ' %').replace('.', ','));
+    popover = svg.append('g');
 
-    popover
-        .style('top', function() {
-            return +$el.attr('y');
+    var rect = popover.append('rect');
+    var text = popover.append('text');
+
+    text
+        .attr('y', function() {
+            var y = +$el.attr('y');
+
+            if(y < 0) {
+                return 0;
+            }
+
+            if(y > height - 20) {
+                return height - 20;
+            }
+
+            return y;
         })
-        .style('left', function() {
+        .attr('x', function() {
             var offsetX = +d3.select(el.parentNode).attr('transform').replace(/translate\(([0-9]+)\)/, '$1');
-            return +$el.attr('x') + offsetX + 14;
+            return +$el.attr('x') + offsetX;
         })
-        .style('opacity', 1);
+        // Animation
+        .style('opacity', 0)
+        .transition()
+        .duration(200)
+        .style('opacity', 1)
+    ;
+
+    text.append('tspan')
+        .attr('class', 'name')
+        .html(d.name + '&nbsp;: ')
+    ;
+
+    text.append('tspan')
+        .attr('class', 'value')
+        .html((d.value + '&nbsp;%').replace('.', ','))
+    ;
+
+    var offset = text.node().getBBox();
+    var padding = {
+        top: 3,
+        left: 6,
+        bottom: 3,
+        right: 6
+    };
+
+    rect
+        .attr('x', offset.x - padding.left)
+        .attr('y', offset.y - padding.top)
+        .attr('width', offset.width + padding.left + padding.right)
+        .attr('height', offset.height + padding.top + padding.bottom)
+        .attr('fill', '#FFFFFF')
+        .attr('stroke', '#CCCCCC')
+        .attr('stroke-width', '0.5')
+        .style('rx', 4)
+        .style('ry', 4)
+        .style('opacity', 0)
+        .transition()
+        .duration(200)
+        .style('opacity', 1)
+    ;
 }
 
 function onPlotsOut(d) {
-    popover.style('opacity', 0);
+    popover
+        .transition()
+        .duration(200)
+        .delay(0)
+        .style('opacity', 0)
+        .remove()
+    ;
+    // popover.remove();
 }
 
 // Load data from CSV
@@ -235,6 +296,6 @@ d3.csv("https://raw.githubusercontent.com/datasets/browser-stats/master/data-ext
         }
     });
 
-    page = browsers.length - 5;
+    page = browsers.length - displayYearNumber;
     update(page);
 });
