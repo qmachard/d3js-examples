@@ -45,7 +45,6 @@ var parseTime = d3.timeParse("%Y-%m");
 
 // Setup pagination
 
-
 /**
  * Transform CSV date to Javascript Date
  * @param d
@@ -68,18 +67,12 @@ function type(d, _, columns) {
  * @param keys
  */
 function updateChart(data, keys) {
-    // Init scales
+    // Update scale X
     x0.domain(data.map(function(d) {
         return d.name;
     }));
 
     x1.domain(keys).rangeRound([0, x0.bandwidth()]);
-
-    y.domain([0, d3.max(data, function(d) {
-        return d3.max(d.data, function(item) {
-            return item.value;
-        })
-    })]).nice();
 
     // Init data of each years
     var years = container.selectAll('.year')
@@ -139,20 +132,21 @@ function updateChart(data, keys) {
     ;
 
 
-    // Axi
-    container.select('.axis')
-        .transition()
-        .duration(100)
-        .remove()
-    ;
+    // Axis
+    container.selectAll('.axis').remove();
 
-    var axis = container.append('g')
+    var axisX = container.append('g')
         .attr("class", "axis")
         .attr("transform", "translate(0," + height + ")")
         .transition()
         .duration(500)
         .delay(100)
         .call(d3.axisBottom(x0))
+    ;
+
+    var axisY = container.append('g')
+        .attr('class', 'axis')
+        .call(d3.axisLeft(y))
     ;
 
     plots.exit().remove();
@@ -295,6 +289,13 @@ d3.csv("https://raw.githubusercontent.com/datasets/browser-stats/master/data-ext
             return d;
         }
     });
+
+    // Init scales
+    y.domain([0, d3.max(browsers, function(d) {
+        return d3.max(d.data, function(item) {
+            return item.value;
+        })
+    })]).nice();
 
     page = browsers.length - displayYearNumber;
     update(page);
