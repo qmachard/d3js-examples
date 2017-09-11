@@ -188,7 +188,7 @@ function type(d, _, columns) {
 }
 
 // Load data from CSV
-d3.csv("../data/browser.txt", type, function(error, data) {
+d3.csv("../data/browser.csv", type, function(error, data) {
     if (error) throw error;
 
     // Rearrange data from csv

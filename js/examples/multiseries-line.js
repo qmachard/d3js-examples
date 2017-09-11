@@ -42,7 +42,7 @@ var line = d3.line()
 var parseTime = d3.timeParse("%Y-%m");
 
 // Load Data
-d3.csv("../data/browser.txt", type, function(error, data) {
+d3.csv("../data/browser.csv", type, function(error, data) {
     if (error) throw error;
 
     // Rearrange data from csv

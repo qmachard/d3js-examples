@@ -254,7 +254,7 @@ function onPlotsOut(d) {
 }
 
 // Load data from CSV
-d3.csv("https://raw.githubusercontent.com/datasets/browser-stats/master/data-extant.csv", type, function(error, data) {
+d3.csv("../data/browser.csv", type, function(error, data) {
     if (error) throw error;
 
     // Get keys
