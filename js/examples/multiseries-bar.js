@@ -4,6 +4,14 @@ var height = 600,
     colors = ['#009999', '#008888', '#007777', '#006666', '#005555', '#004444', '#003333', '#002222']
 ;
 
+// Interface elements
+var page,
+    keys,
+    browsers,
+    nextButton,
+    prevButton
+;
+
 // Create SVG
 var svg = d3.select('#chart').append('svg')
     .attr('height', height)
@@ -26,6 +34,15 @@ var z = d3.scaleOrdinal().range(colors);
 
 // Setup a DateTime parser
 var parseTime = d3.timeParse("%Y-%m");
+
+// Setup pagination
+nextButton = d3.select('#pagination-next').on('click', function() {
+    update(++page);
+});
+
+prevButton = d3.select('#pagination-prev').on('click', function() {
+    update(--page);
+});
 
 /**
  * Transform CSV date to Javascript Date
@@ -62,6 +79,7 @@ function updateChart(data, keys) {
         })
     })]).nice();
 
+    // Init data of each years
     var years = container.selectAll('.year')
         .data(data)
         .enter()
@@ -72,6 +90,7 @@ function updateChart(data, keys) {
         })
     ;
 
+    // Init data of each browsers
     var plots = years.selectAll('.plot')
         .data(function(d) {
             return d.data;
@@ -92,8 +111,15 @@ function updateChart(data, keys) {
 
     var i = 0;
 
-    // Plot animation
-    plots.transition()
+    // Plot update & animation
+    container
+        .selectAll('.year')
+        .data(data)
+        .selectAll('.plot')
+        .data(function(d) {
+            return d.data;
+        })
+        .transition()
         .duration(500)
         .delay(function (d) {
             var delay = i * 50;
@@ -109,29 +135,55 @@ function updateChart(data, keys) {
     ;
 
 
-    // Axis
-
-    container.select('.axis').remove();
+    // Axi
+    container.select('.axis')
+        .transition()
+        .duration(100)
+        .remove()
+    ;
 
     var axis = container.append('g')
         .attr("class", "axis")
         .attr("transform", "translate(0," + height + ")")
+        .transition()
+        .duration(500)
+        .delay(100)
         .call(d3.axisBottom(x0))
     ;
 
-    // plots.exit().remove();
-    // years.exit().remove();
+    plots.exit().remove();
+    years.exit().remove();
+}
+
+/**
+ * Method to update page
+ * @param i
+ */
+function update(i) {
+    if(i > 0) {
+        prevButton.node().parentNode.classList.remove('disabled');
+    } else {
+        prevButton.node().parentNode.classList.add('disabled');
+    }
+
+    if(i < browsers.length - 5) {
+        nextButton.node().parentNode.classList.remove('disabled');
+    } else {
+        nextButton.node().parentNode.classList.add('disabled');
+    }
+
+    updateChart(browsers.slice(i, i + 5), keys);
 }
 
 // Load data from CSV
-d3.csv("../data/browser.txt", type, function(error, data) {
+d3.csv("https://raw.githubusercontent.com/datasets/browser-stats/master/data-extant.csv", type, function(error, data) {
     if (error) throw error;
 
     // Get keys
-    var keys = data.columns.slice(1);
+    keys = data.columns.slice(1);
 
     // Rearrange data from csv
-    var browsers = data.map(function(d) {
+    browsers = data.map(function(d) {
         var data = [];
 
         for(var i in d) {
@@ -160,18 +212,6 @@ d3.csv("../data/browser.txt", type, function(error, data) {
         }
     });
 
-    var i = 0;
-
-    updateChart(browsers.slice(i, i + 5), keys);
-
-    // var interval = setInterval(function() {
-    //     i++;
-    //
-    //     if(i >= browsers.length - 5) {
-    //         i = 0;
-    //     }
-    //
-    //     updateChart(browsers.slice(i, i + 5), keys);
-    // }, 2000);
+    page = browsers.length - 5;
+    update(page);
 });
-

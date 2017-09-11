@@ -17,13 +17,17 @@
 <body>
 <div class="container">
     <a href="../">Back</a>
-    <h1>Multi-series Bar</h1>
+    <h1>Multi-series Bar with CSV data <small>(from <a href="https://github.com/datasets/browser-stats">Browser Stats</a>)</small></h1>
 
-    <div class="chart" id="chart"></div>
+    <div class="chart" id="chart">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination">
+                <li class="page-item"><a href="#" class="page-link" id="pagination-prev">&laquo;</a></li>
+                <li class="page-item"><a href="#" class="page-link" id="pagination-next">&raquo;</a></li>
+            </ul>
+        </nav>
+    </div>
     <iframe src="../js/examples/multiseries-bar.js" frameborder="0" class="code"></iframe>
-
-    <h4>Data <small>(from <a href="https://github.com/datasets/browser-stats">Browser Stats</a>)</small></h4>
-    <iframe src="../data/browser.txt" frameborder="0" class="code"></iframe>
 
     <script src="../js/examples/multiseries-bar.js"></script>
 </div>
